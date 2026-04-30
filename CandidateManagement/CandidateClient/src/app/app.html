@@ -1,0 +1,107 @@
+<div style="padding: 30px; max-width: 800px; margin: auto;">
+  <!-- 1. 表单部分 -->
+  <mat-card style="padding: 20px; margin-bottom: 20px;">
+    <mat-card-title>添加新候选人</mat-card-title>
+    <form [formGroup]="candidateForm" (ngSubmit)="onSubmit()" style="display: flex; gap: 10px; margin-top: 15px;">
+      <mat-form-field>
+        <mat-label>姓名</mat-label>
+        <input matInput formControlName="name">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+      <mat-label>选择职位</mat-label>
+      <!-- 这里的 control 应该对应 CandidateCreateDto 中的 JobTitleId -->
+      <mat-select formControlName="jobTitleId">
+        <mat-option *ngFor="let job of jobTitles()" [value]="job.id">
+      {{ job.title }}
+        </mat-option>
+     </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+  <mat-label>技能标签</mat-label>
+  <!-- 注意增加 multiple 属性 -->
+  <mat-select formControlName="skillIds" multiple>
+    <mat-option *ngFor="let skill of allSkills()" [value]="skill.id">
+      {{ skill.name }}
+    </mat-option>
+  </mat-select>
+</mat-form-field>
+
+
+      <button mat-raised-button color="primary" type="submit" [disabled]="!candidateForm.valid" style="height: 56px;">
+        保存候选人
+      </button>
+    </form>
+  </mat-card>
+
+  <!-- 2. 搜索部分 -->
+  <mat-form-field appearance="fill" style="width: 100%; margin-top: 20px;">
+    <mat-label>搜索候选人 (姓名或职位)</mat-label>
+    <input matInput #searchBox (input)="search(searchBox.value)" placeholder="输入关键字...">
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
+
+  <!-- 3. 表格部分 -->
+  <table mat-table [dataSource]="candidates()" class="mat-elevation-z8" style="width: 100%;">
+    
+    <!-- 姓名列 -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef> 姓名 </th>
+      <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+    </ng-container>
+
+    <!-- 职位列 -->
+    <ng-container matColumnDef="jobTitle">
+      <th mat-header-cell *matHeaderCellDef> 职位 </th>
+      <td mat-cell *matCellDef="let element"> {{element.position}} </td>
+    </ng-container>
+
+    <!-- 状态列 -->
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef> 状态 </th>
+      <td mat-cell *matCellDef="let element">
+        <mat-form-field appearance="outline" style="width: 150px;">
+          <mat-select [value]="element.status" (selectionChange)="updateStatus(element, $event.value)">
+            <mat-option value="Applied">Applied</mat-option>
+            <mat-option value="Interviewing">Interviewing</mat-option>
+            <mat-option value="Offer">Offer</mat-option>
+            <mat-option value="Rejected">Rejected</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </td>
+    </ng-container>
+
+    <!-- 操作列 (移到了这里) -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef> 操作 </th>
+      <td mat-cell *matCellDef="let element">
+        <button mat-icon-button color="warn" (click)="deleteCandidate(element.id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="skills">
+  <th mat-header-cell *matHeaderCellDef> 技能标签 </th>
+  <td mat-cell *matCellDef="let element">
+    <mat-chip-set>
+      <!-- 循环显示 skillNames 数组 -->
+      <mat-chip *ngFor="let sName of element.skillNames">
+        {{ sName }}
+      </mat-chip>
+    </mat-chip-set>
+    <span *ngIf="element.skillNames.length === 0" style="color: gray; font-size: 12px;">无</span>
+  </td>
+ 
+</ng-container>
+    <!-- 行定义：只保留这一组，包含所有 4 列 -->
+    <tr mat-header-row *matHeaderRowDef="['name', 'jobTitle', 'status', 'skills', 'actions']"></tr>
+    <tr mat-row *matRowDef="let row; columns: ['name', 'jobTitle', 'status', 'skills', 'actions'];"></tr>
+    
+  </table>
+   <mat-paginator 
+    [length]="totalCount()"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[5, 10, 20]"
+    (page)="onPageChange($event)"
+    aria-label="选择页码">
+</mat-paginator>
+</div>
