@@ -4,45 +4,41 @@ using CandidateProvider.Models;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-// 注册数据库服务
+
+// 1. 注册数据库服务
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-// Add services to the container.
 
+// 2. 注册控制器和 OpenAPI
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-// 配置 CORS 以允许所有来源、方法和头部
-builder.Services.AddCors(options => {
-    options.AddPolicy("AllowAll", policy => {
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+
+// 3. 配置 CORS (只保留一个)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
-// 注意这里的写法：参数名是 assemblies
-// 注意这里的写法：参数名是 assemblies
-// 显式引用你的 Profile 类名，确保它一定被加载
+
+// 4. 配置 AutoMapper
 builder.Services.AddAutoMapper(config =>
 {
-    // 显式指定从哪个类所在的程序集里去找 MappingProfile
     config.AddMaps(typeof(Program).Assembly);
 });
 
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-// 在开发阶段和生产阶段都适用：自动执行数据库迁移
+// 5. 自动执行数据库迁移 (保持不变，这很好)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<AppDbContext>();
-        // 这行代码会自动检测并执行所有待处理的 Migrations
         context.Database.Migrate();
     }
     catch (Exception ex)
@@ -52,11 +48,18 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// 6. 中间件管道顺序调整
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+}
+
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
-
-app.MapControllers();
-// 使用 CORS 策略
+// 重要：UseCors 必须在 MapControllers 之前
 app.UseCors("AllowAll");
+
+app.UseAuthorization();
+app.MapControllers();
+
 app.Run();
