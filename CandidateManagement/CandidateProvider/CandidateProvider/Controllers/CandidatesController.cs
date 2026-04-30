@@ -61,7 +61,6 @@ public class CandidatesController : ControllerBase
         });
     }
 
-
     // POST: api/candidates (添加候选人)
     [HttpPost]
     public async Task<ActionResult<CandidateReadDto>> PostCandidate(CandidateCreateDto createDto)

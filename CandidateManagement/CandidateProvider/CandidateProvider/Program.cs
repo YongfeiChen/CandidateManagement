@@ -35,6 +35,22 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+// 在开发阶段和生产阶段都适用：自动执行数据库迁移
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<AppDbContext>();
+        // 这行代码会自动检测并执行所有待处理的 Migrations
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "执行数据库迁移时发生错误。");
+    }
+}
 
 app.UseHttpsRedirection();
 
