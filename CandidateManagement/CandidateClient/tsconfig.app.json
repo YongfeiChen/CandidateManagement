@@ -4,6 +4,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
+    "rootDir": "src",  // <--- 显式指定源码目录为 src
     "types": []
   },
   "include": [
