@@ -7,7 +7,7 @@ export class CandidateService {
   private http = inject(HttpClient);
 
   // 1. 基础域名：建议定义一个 base，方便统一修改
-  private baseUrl = 'https://railway.app'; 
+  private baseUrl = 'https://candidatemanagement-production.up.railway.app/api'; // 替换为你的云端地址
 
   // 2. 各个资源的具体地址
   private candidatesUrl = `${this.baseUrl}/candidates`;
