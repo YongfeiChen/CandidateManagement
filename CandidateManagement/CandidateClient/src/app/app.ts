@@ -100,12 +100,28 @@ onPageChange(event: PageEvent) {
   }
   
   updateStatus(candidate: any, newStatus: string) {
-  const updatedCandidate = { ...candidate, status: newStatus };
-  this.service.update(candidate.id, updatedCandidate).subscribe(() => {
-    console.log('状态更新成功');
-    this.refresh(); // 刷新列表确保数据同步
+  // 关键：构建一个只包含后端 UpdateDto 要求的字段的对象
+  const updatePayload = {
+    id: candidate.id,
+    name: candidate.name,
+    status: newStatus,
+    // 注意：确保你的 ReadDto 里面包含了 jobTitleId 这个数字字段
+    jobTitleId: candidate.jobTitleId 
+  };
+
+  console.log('发送的更新数据：', updatePayload);
+
+  this.service.update(candidate.id, updatePayload).subscribe({
+    next: () => {
+      console.log('状态更新成功');
+      this.refresh(); 
+    },
+    error: (err) => {
+      console.error('更新失败，详情：', err);
+      // 如果还报 400，说明字段名没对上；如果报 500，说明后端 DTO 类型还没改对
+    }
   });
-  }
+}
     deleteCandidate(id: number): void {
     // 1. 打开弹窗
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
