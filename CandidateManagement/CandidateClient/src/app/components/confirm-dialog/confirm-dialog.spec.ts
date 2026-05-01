@@ -6,6 +6,9 @@ describe('ConfirmDialog', () => {
   let component: ConfirmDialog;
   let fixture: ComponentFixture<ConfirmDialog>;
 
+  /**
+   * Setup test module and create component instance before each test.
+   */
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ConfirmDialog]
@@ -17,6 +20,9 @@ describe('ConfirmDialog', () => {
     fixture.detectChanges();
   });
 
+  /**
+   * Test: ConfirmDialog component should be created successfully.
+   */
   it('should create', () => {
     expect(component).toBeTruthy();
   });

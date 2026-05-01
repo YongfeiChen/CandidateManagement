@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms'; // 表单必备
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms'; // Required for form handling
 import { CandidateService } from './services/candidate.service';
 import { MatTableModule } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -34,7 +34,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
   MatButtonModule,
   MatSelectModule, 
   MatCardModule,
-  MatChipsModule], // 导入模块
+  MatChipsModule], // Import required modules
   templateUrl: './app.html',
   styleUrl: './app.scss' 
 })
@@ -50,107 +50,138 @@ export class App implements OnInit {
   pageNumber = 1;
   pageSize = 5;
 
-  // 定义表单结构
+  // Define form structure with validation rules
   candidateForm = this.fb.group({
     name: ['', [
   Validators.required,
   Validators.minLength(2),
   Validators.maxLength(50),
-  // 对应后端的正则
+  // Regex pattern matching backend validation
   Validators.pattern(/^[\u4e00-\u9fa5a-zA-Z\s·]+$/) 
 ]],
     jobTitleId: [null, Validators.required],
-    skillIds: [[]], // 技能可以是多个，所以用数组
+    skillIds: [[]], // Skills array supports multiple selections
     status: ['Applied']
   });
 
+  /**
+   * Angular lifecycle hook: Initializes component data and subscriptions.
+   */
   ngOnInit() {
       this.loadInitialData();
       this.searchTerms.pipe(
   debounceTime(400),
   distinctUntilChanged(),
   switchMap((term: string) => {
-    this.pageNumber = 1; // 搜索时重置页码
+    this.pageNumber = 1; // Reset page number when searching
     return this.service.getList(term, this.pageNumber, this.pageSize);
   })
 ).subscribe({
   next: (res) => {
-    // 关键修正点：表格数据源必须是数组，所以要取 res.items
+    // Important: Table data source must be an array, extract items from response
     this.candidates.set(res.items); 
     
-    // 分页器需要总数
+    // Paginator requires total count
     this.totalCount.set(res.totalCount);
   },
-  error: (err) => console.error('搜索出错', err)
+  error: (err) => console.error('Search error', err)
 });
     this.service.getJobTitles().subscribe(data => this.jobTitles.set(data));
     this.service.getSkills().subscribe(data => this.allSkills.set(data));
     this.refresh();
   }
+  /**
+   * Loads initial data including job titles and handles errors.
+   */
    loadInitialData() {
-    // 3. 调用 Service 获取职位列表并填充到信号中
+    // Call Service to fetch job titles and populate into signal
     this.service.getJobTitles().subscribe({
       next: (data) => this.jobTitles.set(data),
-      error: (err) => console.error('获取职位失败:', err)
+      error: (err) => console.error('Failed to load job titles:', err)
     });}
+  /**
+   * Triggers search with debouncing to filter candidates by keyword.
+   * @param term - Search keyword (name or job title)
+   */
   search(term: string): void {
     this.searchTerms.next(term);
   }
   
+/**
+   * Refreshes the candidate list with optional search filter.
+   * @param search - Optional search keyword (defaults to empty string)
+   */
  refresh(search: string = '') {
   this.service.getList(search, this.pageNumber, this.pageSize).subscribe(res => {
-    this.candidates.set(res.items); // 注意：这里要取 res.items，因为后端返回结构变了
+    this.candidates.set(res.items); // Note: Extract items array from response
     this.totalCount.set(res.totalCount);
   });
 }
+/**
+   * Handles pagination change events.
+   * @param event - PageEvent from mat-paginator
+   */
 onPageChange(event: PageEvent) {
-  this.pageNumber = event.pageIndex + 1; // Index 从 0 开始，所以加 1
+  this.pageNumber = event.pageIndex + 1; // Index starts at 0, so add 1
   this.pageSize = event.pageSize;
   this.refresh();
 }
 
+  /**
+   * Submits the candidate form to create a new candidate.
+   * Refreshes the list and resets the form on success.
+   */
   onSubmit() {
     if (this.candidateForm.valid) {
       this.service.add(this.candidateForm.value).subscribe(() => {
-        this.refresh(); // 刷新列表
-        this.candidateForm.reset({ status: 'Applied' }); // 重置表单
+        this.refresh(); // Refresh candidate list
+        this.candidateForm.reset({ status: 'Applied' }); // Reset form
       });
     }
   }
   
+  /**
+   * Updates a candidate's status and refreshes the list.
+   * @param candidate - The candidate object to update
+   * @param newStatus - The new status value
+   */
   updateStatus(candidate: any, newStatus: string) {
-  // 关键：构建一个只包含后端 UpdateDto 要求的字段的对象
+  // Important: Build payload with only required backend UpdateDto fields
   const updatePayload = {
     id: candidate.id,
     name: candidate.name,
     status: newStatus,
-    // 注意：确保你的 ReadDto 里面包含了 jobTitleId 这个数字字段
+    // Note: Ensure ReadDto includes jobTitleId numeric field
     jobTitleId: candidate.jobTitleId 
   };
 
-  console.log('发送的更新数据：', updatePayload);
+  console.log('Sending update data:', updatePayload);
 
   this.service.update(candidate.id, updatePayload).subscribe({
     next: () => {
-      console.log('状态更新成功');
+      console.log('Status updated successfully');
       this.refresh(); 
     },
     error: (err) => {
-      console.error('更新失败，详情：', err);
-      // 如果还报 400，说明字段名没对上；如果报 500，说明后端 DTO 类型还没改对
+      console.error('Update failed:', err);
+      // 400: Field name mismatch; 500: Backend DTO type mismatch
     }
   });
   }
+    /**
+     * Opens confirmation dialog before deleting a candidate.
+     * @param id - Candidate ID to delete
+     */
     deleteCandidate(id: number): void {
-    // 1. 打开弹窗
+    // 1. Open confirmation dialog
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '350px'
     });
 
-    // 2. 监听弹窗关闭后的结果
+    // 2. Listen for dialog result
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        // 用户点击了“确定”
+        // User confirmed deletion
         this.service.deleteCandidate(id).subscribe(() => {
           this.refresh();
         });
