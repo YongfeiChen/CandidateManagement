@@ -58,12 +58,22 @@ export class App implements OnInit {
   ngOnInit() {
       this.loadInitialData();
       this.searchTerms.pipe(
-      debounceTime(400),        // 等待 400 毫秒，用户停手后再发请求（防抖）
-      distinctUntilChanged(),   // 只有内容真的变了才发请求
-      switchMap((term: string) => this.service.getList(term)) // 如果新请求来了，取消旧请求
-    ).subscribe(data => {
-      this.candidates = data;
-    });
+  debounceTime(400),
+  distinctUntilChanged(),
+  switchMap((term: string) => {
+    this.pageNumber = 1; // 搜索时重置页码
+    return this.service.getList(term, this.pageNumber, this.pageSize);
+  })
+).subscribe({
+  next: (res) => {
+    // 关键修正点：表格数据源必须是数组，所以要取 res.items
+    this.candidates.set(res.items); 
+    
+    // 分页器需要总数
+    this.totalCount.set(res.totalCount);
+  },
+  error: (err) => console.error('搜索出错', err)
+});
     this.service.getJobTitles().subscribe(data => this.jobTitles.set(data));
     this.service.getSkills().subscribe(data => this.allSkills.set(data));
     this.refresh();
@@ -121,7 +131,7 @@ onPageChange(event: PageEvent) {
       // 如果还报 400，说明字段名没对上；如果报 500，说明后端 DTO 类型还没改对
     }
   });
-}
+  }
     deleteCandidate(id: number): void {
     // 1. 打开弹窗
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
