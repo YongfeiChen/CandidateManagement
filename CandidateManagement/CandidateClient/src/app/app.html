@@ -1,4 +1,13 @@
-<div style="padding: 30px; max-width: 800px; margin: auto;">
+<div class="app-container">
+  <!-- Header -->
+  <mat-toolbar color="primary" class="header-toolbar">
+    <mat-icon>groups</mat-icon>
+    <span>Yongfei's Demo</span>
+    <span class="spacer"></span>
+  </mat-toolbar>
+
+<main class="content">
+<div class="main-wrapper"> 
   <!-- 1. 表单部分 -->
   <mat-card style="padding: 20px; margin-bottom: 20px;">
     <mat-card-title>添加新候选人</mat-card-title>
@@ -107,4 +116,14 @@
     (page)="onPageChange($event)"
     aria-label="选择页码">
 </mat-paginator>
+</div>
+</main>
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p>&copy; 2026 Yongfei's Candidate Management System. Built with .NET 10 & Angular 19.</p>
+      <div class="footer-links">
+        <a href="https://github.com" target="_blank">GitHub</a>
+      </div>
+    </div>
+  </footer>
 </div>
