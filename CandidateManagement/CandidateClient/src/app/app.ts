@@ -14,11 +14,13 @@ import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dial
 import { MatIconModule } from '@angular/material/icon'
 import { MatChipsModule } from '@angular/material/chips';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
+  MatToolbarModule,
   MatPaginatorModule,
   MatIconModule,
   MatDialogModule,
@@ -33,7 +35,8 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
   MatSelectModule, 
   MatCardModule,
   MatChipsModule], // 导入模块
-  templateUrl: './app.html'
+  templateUrl: './app.html',
+  styleUrl: './app.scss' 
 })
 export class App implements OnInit {
   private service = inject(CandidateService);

@@ -1,0 +1,67 @@
+/* 1. 整体容器 */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f8f9fa; // 浅灰背景，更有质感
+}
+
+/* 2. Header 间距 */
+.spacer {
+  flex: 1 1 auto;
+}
+
+/* 3. 主体内容区 */
+.content {
+  flex: 1;
+  padding: 40px 20px;
+  
+  /* 替换你 HTML 里的内联 style，让宽度更灵活 */
+  .main-wrapper {
+    max-width: 1200px; // 调大一点，给 Skills 标签留空间
+    margin: 0 auto;
+  }
+}
+
+/* 4. 表单美化：让表单自动换行 */
+form {
+  display: flex;
+  flex-wrap: wrap; // 关键：屏幕窄时自动换行
+  gap: 16px;
+  align-items: flex-start;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 200px; // 保证输入框不会太窄
+  }
+
+  button {
+    height: 56px; // 保持与 outline 输入框对齐
+    padding: 0 30px;
+  }
+}
+
+/* 5. 表格美化 */
+table {
+  width: 100%;
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+
+  /* 调整状态下拉框在表格里的高度，防止行被撑开太高 */
+  td.mat-column-status {
+    mat-form-field {
+      margin-top: 15px; // 抵消 outline 的默认 margin
+      font-size: 13px;
+    }
+  }
+}
+
+/* 6. Footer 样式保持 */
+.app-footer {
+  background: white;
+  padding: 30px 0;
+  border-top: 1px solid #dee2e6;
+  text-align: center;
+}
