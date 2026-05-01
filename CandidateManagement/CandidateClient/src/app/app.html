@@ -3,10 +3,13 @@
   <mat-card style="padding: 20px; margin-bottom: 20px;">
     <mat-card-title>添加新候选人</mat-card-title>
     <form [formGroup]="candidateForm" (ngSubmit)="onSubmit()" style="display: flex; gap: 10px; margin-top: 15px;">
-      <mat-form-field>
-        <mat-label>姓名</mat-label>
-        <input matInput formControlName="name">
-      </mat-form-field>
+     <mat-form-field appearance="outline">
+  <mat-label>姓名</mat-label>
+  <input matInput formControlName="name">
+  <mat-error *ngIf="candidateForm.get('name')?.hasError('pattern')">
+    请输入有效的姓名（中英文）
+  </mat-error>
+</mat-form-field>
       <mat-form-field appearance="outline">
       <mat-label>选择职位</mat-label>
       <!-- 这里的 control 应该对应 CandidateCreateDto 中的 JobTitleId -->
