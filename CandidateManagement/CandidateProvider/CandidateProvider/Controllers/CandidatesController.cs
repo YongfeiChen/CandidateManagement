@@ -7,31 +7,47 @@ using CandidateProvider.DTOs;
 
 namespace CandidateProvider.Controllers;
 
+/// <summary>
+/// API controller for managing candidates.
+/// Provides endpoints for CRUD operations on candidate records.
+/// </summary>
 [Route("api/[controller]")]
 [ApiController]
 public class CandidatesController : ControllerBase
 {
     private readonly AppDbContext _context;
-    private readonly IMapper _mapper; // 定义 Mapper
+    private readonly IMapper _mapper;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CandidatesController"/> class.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="mapper">The AutoMapper instance.</param>
     public CandidatesController(AppDbContext context, IMapper mapper)
     {
         _context = context;
         _mapper = mapper;
     }
-    // GET: api/candidates (获取所有候选人)
+
+    /// <summary>
+    /// Gets all candidates with optional search and pagination support.
+    /// </summary>
+    /// <param name="search">Optional search query to filter candidates by name or position.</param>
+    /// <param name="pageNumber">The page number for pagination (default: 1).</param>
+    /// <param name="pageSize">The number of records per page (default: 5).</param>
+    /// <returns>A paginated list of candidates with metadata.</returns>
     [HttpGet]
     public async Task<ActionResult<object>> GetCandidates(
     [FromQuery] string? search = null,
     [FromQuery] int pageNumber = 1,
-    [FromQuery] int pageSize = 5) // 默认每页 5 个
+    [FromQuery] int pageSize = 5)
     {
         var query = _context.Candidates
             .Include(c => c.JobTitle)
             .Include(c => c.Skills)
             .AsQueryable();
 
-        // 1. 搜索逻辑（保留）
+        // Apply search filter
         if (!string.IsNullOrWhiteSpace(search))
         {
             string s = search.ToLower();
@@ -39,19 +55,19 @@ public class CandidatesController : ControllerBase
                                      (c.JobTitle != null && c.JobTitle.Title.ToLower().Contains(s)));
         }
 
-        // 2. 计算总条数（前端分页控件需要知道一共多少页）
+        // Get total count for pagination metadata
         var totalCount = await query.CountAsync();
 
-        // 3. 执行分页逻辑：跳过之前的页数，只取当前页的大小
+        // Apply pagination
         var items = await query
-            .OrderByDescending(c => c.CreatedAt) // 通常按创建时间排序，让新人在第一页
+            .OrderByDescending(c => c.CreatedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
         var dtos = _mapper.Map<IEnumerable<CandidateReadDto>>(items);
 
-        // 4. 返回一个包含元数据和数据的对象
+        // Return paginated response with metadata
         return Ok(new
         {
             TotalCount = totalCount,
@@ -61,13 +77,17 @@ public class CandidatesController : ControllerBase
         });
     }
 
-    // POST: api/candidates (添加候选人)
+    /// <summary>
+    /// Creates a new candidate with the provided information.
+    /// </summary>
+    /// <param name="createDto">The candidate creation data.</param>
+    /// <returns>The newly created candidate as a read DTO.</returns>
     [HttpPost]
     public async Task<ActionResult<CandidateReadDto>> PostCandidate(CandidateCreateDto createDto)
     {
         var candidate = _mapper.Map<Candidate>(createDto);
 
-        // 根据前端传来的 ID 列表，从数据库加载 Skill 实体
+        // Load associated skills from the database
         if (createDto.SkillIds != null && createDto.SkillIds.Count > 0)
         {
             candidate.Skills = await _context.Skills
@@ -108,12 +128,14 @@ public class CandidatesController : ControllerBase
             throw;
         }
 
-        return NoContent(); // 204
+        return NoContent();
     }
 
-
-
-    // DELETE: api/candidates/1 (删除候选人)
+    /// <summary>
+    /// Deletes a candidate with the specified ID.
+    /// </summary>
+    /// <param name="id">The ID of the candidate to delete.</param>
+    /// <returns>No content if successful.</returns>
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCandidate(int id)
     {
