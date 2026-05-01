@@ -49,7 +49,13 @@ export class App implements OnInit {
 
   // 定义表单结构
   candidateForm = this.fb.group({
-    name: ['', Validators.required],
+    name: ['', [
+  Validators.required,
+  Validators.minLength(2),
+  Validators.maxLength(50),
+  // 对应后端的正则
+  Validators.pattern(/^[\u4e00-\u9fa5a-zA-Z\s·]+$/) 
+]],
     jobTitleId: [null, Validators.required],
     skillIds: [[]], // 技能可以是多个，所以用数组
     status: ['Applied']
