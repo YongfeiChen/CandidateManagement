@@ -1,3 +1,9 @@
+## 🔗 Live Demo
+*   **Frontend (UI)**: https://candidate-management-olive.vercel.app/
+*   **Backend (API)**: candidatemanagement-production.up.railway.app/api/candidates
+
+> **Note**: The database (Neon PostgreSQL) may enter sleep mode after periods of inactivity. If the data doesn't load immediately, please refresh the page once to wake it up.
+
 # Candidate Management System (CMS)
 
 A modern full-stack web application built with **.NET 10** and **Angular 19**. This project represents a technical milestone in the journey from a **Recruitment Industry background** to becoming a **Full-Stack Developer**, focusing on optimizing candidate tracking and talent management through technology.
