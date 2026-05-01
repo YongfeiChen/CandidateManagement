@@ -1,11 +1,27 @@
 ﻿namespace CandidateProvider.Models;
 
+/// <summary>
+/// Represents a job title in the system.
+/// </summary>
 public class JobTitle
 {
+    /// <summary>
+    /// Gets or sets the unique identifier for the job title.
+    /// </summary>
     public int Id { get; set; }
-    public string Title { get; set; } = string.Empty; // 职位名称，如 ".NET Developer"
+
+    /// <summary>
+    /// Gets or sets the title name (e.g., ".NET Developer").
+    /// </summary>
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the description of the job title.
+    /// </summary>
     public string Description { get; set; } = string.Empty;
 
-    // 导航属性：一个职位对应多个候选人
+    /// <summary>
+    /// Gets or sets the navigation property to the list of candidates with this job title.
+    /// </summary>
     public List<Candidate> Candidates { get; set; } = new();
 }
