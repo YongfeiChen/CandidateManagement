@@ -1,0 +1,67 @@
+/* 1. Main Container */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f8f9fa; // Light gray background for better aesthetics
+}
+
+/* 2. Header Spacer */
+.spacer {
+  flex: 1 1 auto;
+}
+
+/* 3. Main Content Area */
+.content {
+  flex: 1;
+  padding: 40px 20px;
+  
+  /* Replace inline styles in HTML for flexible width */
+  .main-wrapper {
+    max-width: 1200px; // Increased width to accommodate skill tags
+    margin: 0 auto;
+  }
+}
+
+/* 4. Form Styling: Auto-wrap on narrow screens */
+form {
+  display: flex;
+  flex-wrap: wrap; // Key: Auto-wrap on narrow screens
+  gap: 16px;
+  align-items: flex-start;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 200px; // Ensure input fields maintain minimum width
+  }
+
+  button {
+    height: 56px; // Keep aligned with outline input field height
+    padding: 0 30px;
+  }
+}
+
+/* 5. Table Styling */
+table {
+  width: 100%;
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+
+  /* Adjust status dropdown height in table to prevent row expansion */
+  td.mat-column-status {
+    mat-form-field {
+      margin-top: 15px; // Offset outline field default margin
+      font-size: 13px;
+    }
+  }
+}
+
+/* 6. Footer Styling */
+.app-footer {
+  background: white;
+  padding: 30px 0;
+  border-top: 1px solid #dee2e6;
+  text-align: center;
+}

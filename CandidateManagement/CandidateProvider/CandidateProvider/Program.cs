@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. 注册数据库服务
+// Register database service
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. 注册控制器和 OpenAPI
+// Register controllers and OpenAPI
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-// 3. 配置 CORS (只保留一个)
+// Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -24,7 +24,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 4. 配置 AutoMapper
+// Configure AutoMapper
 builder.Services.AddAutoMapper(config =>
 {
     config.AddMaps(typeof(Program).Assembly);
@@ -32,7 +32,7 @@ builder.Services.AddAutoMapper(config =>
 
 var app = builder.Build();
 
-// 5. 自动执行数据库迁移 (保持不变，这很好)
+// Automatically execute database migrations on startup
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -44,11 +44,11 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "执行数据库迁移时发生错误。");
+        logger.LogError(ex, "An error occurred during database migration.");
     }
 }
 
-// 6. 中间件管道顺序调整
+// Middleware pipeline configuration
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -56,7 +56,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// 重要：UseCors 必须在 MapControllers 之前
+// CORS must be applied before MapControllers
 app.UseCors("AllowAll");
 
 app.UseAuthorization();
