@@ -87,6 +87,9 @@ public class CandidatesController : ControllerBase
     {
         var candidate = _mapper.Map<Candidate>(createDto);
 
+        // Ensure the candidate has a proper creation timestamp
+        candidate.CreatedAt = DateTime.UtcNow;
+
         // Load associated skills from the database
         if (createDto.SkillIds != null && createDto.SkillIds.Count > 0)
         {
