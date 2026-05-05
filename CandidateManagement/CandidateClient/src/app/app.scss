@@ -41,6 +41,62 @@ form {
   }
 }
 
+/* 4.5 Filter Section and Panel: Compact and visually distinct (70% scale) */
+.filter-section {
+  margin-top: 20px;
+
+  /**
+   * Filter section title for visual clarity
+   */
+  .filter-title {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1976d2;
+  }
+}
+
+.filter-panel {
+  display: grid;
+  gap: 11px; // Reduced from 16px (70% of original)
+  padding: 14px; // Reduced from 20px
+  background-color: #f0f4f8; // Light blue background for distinction
+  border-radius: 6px;
+  border-left: 4px solid #1976d2; // Primary color accent
+
+  .filter-controls {
+    display: grid;
+    gap: 11px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); // Reduced from 240px
+  }
+
+  .filter-field {
+    width: 100%;
+    font-size: 12px;
+
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+      display: none;
+    }
+  }
+
+  .filter-actions {
+    display: flex;
+    gap: 9px; // Reduced from 12px
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-button {
+    height: 36px; // Reduced from 56px (approximately 70%)
+    padding: 0 18px; // Reduced from 30px
+    font-size: 12px; // Smaller font
+
+    ::ng-deep .mat-mdc-button-base {
+      min-height: 36px;
+    }
+  }
+}
+
 /* 5. Table Styling */
 table {
   width: 100%;

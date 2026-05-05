@@ -15,19 +15,51 @@ export class CandidateService {
   private skillsUrl = `${this.baseUrl}/skills`;
 
   /**
-   * Retrieves a paginated list of candidates with optional search filter.
-   * @param search - Search keyword (optional, defaults to empty string)
+   * Retrieves a paginated list of candidates using backend filter endpoint.
+   * @param search - Legacy search keyword (ignored by current /filter endpoint)
    * @param pageNumber - Page number for pagination (1-indexed)
    * @param pageSize - Number of items per page (default: 5)
-   * @returns Observable containing paginated candidate list and total count
+   * @param jobTitleId - Job title ID filter (optional)
+   * @param skillIds - Skill IDs filter array (optional)
+   * @returns Observable containing filtered candidate list and total count
    */
-  getList(search: string = '', pageNumber: number = 1, pageSize: number = 5): Observable<any> {
+  getList(
+    search: string = '',
+    pageNumber: number = 1,
+    pageSize: number = 5,
+    jobTitleId: number | null = null,
+    skillIds: number[] = []
+  ): Observable<any> {
+    return this.filterCandidates(jobTitleId, skillIds.join(','), pageNumber, pageSize);
+  }
+
+  /**
+   * Filters candidates by job title and skills with pagination support.
+   * @param jobTitleId - Job title ID (optional, filters candidates by specific job title)
+   * @param skillIds - Comma-separated skill IDs string (optional, filters candidates with matching skills)
+   * @param pageNumber - Page number for pagination (1-indexed, default: 1)
+   * @param pageSize - Number of items per page (default: 5)
+   * @returns Observable containing filtered candidate list and total count
+   */
+  filterCandidates(
+    jobTitleId: number | null = null,
+    skillIds: string = '',
+    pageNumber: number = 1,
+    pageSize: number = 5
+  ): Observable<any> {
     let params = new HttpParams()
-      .set('search', search)
-      .set('pageNumber', pageNumber.toString()) // Ensure string conversion
+      .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
 
-    return this.http.get<any>(this.candidatesUrl, { params });
+    if (jobTitleId !== null) {
+      params = params.set('jobTitleId', jobTitleId.toString());
+    }
+
+    if (skillIds && skillIds.trim().length > 0) {
+      params = params.set('skillIds', skillIds);
+    }
+
+    return this.http.get<any>(`${this.candidatesUrl}/filter`, { params });
   }
 
   /**

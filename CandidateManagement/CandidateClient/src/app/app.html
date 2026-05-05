@@ -47,13 +47,49 @@
 
   <!-- 2. Search Section -->
   <mat-form-field appearance="fill" style="width: 100%; margin-top: 20px;">
-    <mat-label>Search Candidates (Name or Job Title)</mat-label>
+    <mat-label>Search Candidates</mat-label>
     <input matInput #searchBox (input)="search(searchBox.value)" placeholder="Enter keyword...">
     <mat-icon matSuffix>search</mat-icon>
   </mat-form-field>
 
-  <!-- 3. Data Table Section -->
-  <table mat-table [dataSource]="candidates()" class="mat-elevation-z8" style="width: 100%;">
+  <!-- 3. Filter Section -->
+  <div class="filter-section">
+    <h3 class="filter-title">Filter</h3>
+    <form [formGroup]="filterForm" class="filter-panel">
+      <div class="filter-controls">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Job Title</mat-label>
+          <mat-select formControlName="jobTitleId">
+            <mat-option [value]="null">All</mat-option>
+            <mat-option *ngFor="let job of jobTitles()" [value]="job.id">
+              {{ job.title }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Skills</mat-label>
+          <mat-select formControlName="skillIds" multiple>
+            <mat-option *ngFor="let skill of allSkills()" [value]="skill.id">
+              {{ skill.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="filter-actions">
+        <button mat-stroked-button color="primary" type="button" (click)="applyFilters()" class="filter-button">
+          Apply
+        </button>
+        <button mat-button type="button" (click)="clearFilters()" class="filter-button">
+          Clear
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 4. Data Table Section -->
+  <table mat-table [dataSource]="candidates()" class="mat-elevation-z8" style="width: 100%; margin-top: 20px;">
     
     <!-- Name Column -->
     <ng-container matColumnDef="name">
