@@ -7,8 +7,8 @@ export class CandidateService {
   private http = inject(HttpClient);
 
   // 1. Base URL: Configure for environment (production or local)
-  //private baseUrl = 'https://candidatemanagement-production.up.railway.app/api'; // Replace with your cloud address
-  private baseUrl = 'https://localhost:7227/api'; // Replace with your local address
+  private baseUrl = 'https://candidatemanagement-production.up.railway.app/api'; // Replace with your cloud address
+  //private baseUrl = 'https://localhost:7227/api'; // Replace with your local address
   // 2. API resource endpoints
   private candidatesUrl = `${this.baseUrl}/candidates`;
   private jobTitlesUrl = `${this.baseUrl}/jobtitles`;
