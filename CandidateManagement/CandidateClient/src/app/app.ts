@@ -43,62 +43,82 @@ export class App implements OnInit {
   private fb = inject(FormBuilder);
   private searchTerms = new Subject<string>()
   private dialog = inject(MatDialog)
-  candidates = signal<any[]>([]); 
-  jobTitles = signal<any[]>([]); 
+  candidates = signal<any[]>([]);
+  jobTitles = signal<any[]>([]);
   allSkills = signal<any[]>([]);
   totalCount = signal(0);
   pageNumber = 1;
   pageSize = 5;
 
-  // Define form structure with validation rules
+  // Define form structure with validation rules for candidate creation
   candidateForm = this.fb.group({
     name: ['', [
-  Validators.required,
-  Validators.minLength(2),
-  Validators.maxLength(50),
-  // Regex pattern matching backend validation
-  Validators.pattern(/^[\u4e00-\u9fa5a-zA-Z\s·]+$/) 
-]],
+      Validators.required,
+      Validators.minLength(2),
+      Validators.maxLength(50),
+      // Regex pattern matching backend validation
+      Validators.pattern(/^[\u4e00-\u9fa5a-zA-Z\s·]+$/)
+    ]],
     jobTitleId: [null, Validators.required],
     skillIds: [[]], // Skills array supports multiple selections
     status: ['Applied']
+  });
+
+  // Filter controls for candidate search
+  filterForm = this.fb.group({
+    search: [''],
+    jobTitleId: [null],
+    skillIds: [[] as number[]]
   });
 
   /**
    * Angular lifecycle hook: Initializes component data and subscriptions.
    */
   ngOnInit() {
-      this.loadInitialData();
-      this.searchTerms.pipe(
-  debounceTime(400),
-  distinctUntilChanged(),
-  switchMap((term: string) => {
-    this.pageNumber = 1; // Reset page number when searching
-    return this.service.getList(term, this.pageNumber, this.pageSize);
-  })
-).subscribe({
-  next: (res) => {
-    // Important: Table data source must be an array, extract items from response
-    this.candidates.set(res.items); 
-    
-    // Paginator requires total count
-    this.totalCount.set(res.totalCount);
-  },
-  error: (err) => console.error('Search error', err)
-});
-    this.service.getJobTitles().subscribe(data => this.jobTitles.set(data));
-    this.service.getSkills().subscribe(data => this.allSkills.set(data));
+    this.loadInitialData();
+
+    this.searchTerms.pipe(
+      debounceTime(400),
+      distinctUntilChanged(),
+      switchMap((term: string) => {
+        this.pageNumber = 1; // Reset page number when searching
+        this.filterForm.patchValue({ search: term }, { emitEvent: false });
+        return this.service.getList(
+          term,
+          this.pageNumber,
+          this.pageSize,
+          this.filterForm.value.jobTitleId,
+          this.filterForm.value.skillIds ?? []
+        );
+      })
+    ).subscribe({
+      next: (res) => {
+        // Important: Table data source must be an array, extract items from response
+        this.candidates.set(res.items);
+        // Paginator requires total count
+        this.totalCount.set(res.totalCount);
+      },
+      error: (err) => console.error('Search error', err)
+    });
+
     this.refresh();
   }
+
   /**
-   * Loads initial data including job titles and handles errors.
+   * Loads initial lookup data including job titles and skills.
    */
-   loadInitialData() {
-    // Call Service to fetch job titles and populate into signal
+  loadInitialData() {
     this.service.getJobTitles().subscribe({
       next: (data) => this.jobTitles.set(data),
       error: (err) => console.error('Failed to load job titles:', err)
-    });}
+    });
+
+    this.service.getSkills().subscribe({
+      next: (data) => this.allSkills.set(data),
+      error: (err) => console.error('Failed to load skills:', err)
+    });
+  }
+
   /**
    * Triggers search with debouncing to filter candidates by keyword.
    * @param term - Search keyword (name or job title)
@@ -106,17 +126,46 @@ export class App implements OnInit {
   search(term: string): void {
     this.searchTerms.next(term);
   }
-  
-/**
-   * Refreshes the candidate list with optional search filter.
-   * @param search - Optional search keyword (defaults to empty string)
+
+  /**
+   * Applies the selected filters and refreshes the candidate list.
    */
- refresh(search: string = '') {
-  this.service.getList(search, this.pageNumber, this.pageSize).subscribe(res => {
-    this.candidates.set(res.items); // Note: Extract items array from response
-    this.totalCount.set(res.totalCount);
-  });
-}
+  applyFilters(): void {
+    this.pageNumber = 1;
+    this.refresh();
+  }
+
+  /**
+   * Clears all search filters and refreshes the candidate list.
+   */
+  clearFilters(): void {
+    this.filterForm.reset();
+    this.filterForm.get('search')?.setValue('');
+    this.filterForm.get('jobTitleId')?.setValue(null);
+    this.filterForm.get('skillIds')?.setValue([]);
+    this.pageNumber = 1;
+    this.refresh();
+  }
+
+  /**
+   * Refreshes the candidate list based on active filter values.
+   */
+  refresh() {
+    const filters = this.filterForm.value;
+    this.service.getList(
+      filters.search ?? '',
+      this.pageNumber,
+      this.pageSize,
+      filters.jobTitleId,
+      filters.skillIds ?? []
+    ).subscribe({
+      next: (res) => {
+        this.candidates.set(res.items); // Note: Extract items array from response
+        this.totalCount.set(res.totalCount);
+      },
+      error: (err) => console.error('Failed to refresh candidates:', err)
+    });
+  }
 /**
    * Handles pagination change events.
    * @param event - PageEvent from mat-paginator

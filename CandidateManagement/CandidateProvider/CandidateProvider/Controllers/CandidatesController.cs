@@ -78,6 +78,72 @@ public class CandidatesController : ControllerBase
     }
 
     /// <summary>
+    /// Gets candidates filtered by job title and/or skills with pagination support.
+    /// </summary>
+    /// <param name="jobTitleId">Optional job title identifier to filter candidates.</param>
+    /// <param name="skillIds">Optional comma-separated list of skill identifiers to filter candidates.</param>
+    /// <param name="pageNumber">The page number for pagination (default: 1).</param>
+    /// <param name="pageSize">The number of records per page (default: 5).</param>
+    /// <returns>A paginated list of candidates matching the filter criteria with metadata.</returns>
+    [HttpGet("filter")]
+    public async Task<ActionResult<object>> FilterCandidates(
+    [FromQuery] int? jobTitleId = null,
+    [FromQuery] string? skillIds = null,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 5)
+    {
+        var query = _context.Candidates
+            .Include(c => c.JobTitle)
+            .Include(c => c.Skills)
+            .AsQueryable();
+
+        // Filter by job title if specified
+        if (jobTitleId.HasValue && jobTitleId > 0)
+        {
+            query = query.Where(c => c.JobTitleId == jobTitleId.Value);
+        }
+
+        // Filter by skills if specified
+        if (!string.IsNullOrWhiteSpace(skillIds))
+        {
+            var skillIdList = skillIds
+                .Split(',', System.StringSplitOptions.RemoveEmptyEntries)
+                .Select(id => int.TryParse(id.Trim(), out var parsedId) ? parsedId : -1)
+                .Where(id => id > 0)
+                .ToList();
+
+            if (skillIdList.Count > 0)
+            {
+                // Filter candidates that have ALL specified skills
+                query = query.Where(c =>
+                    skillIdList.All(skillId =>
+                        c.Skills.Any(s => s.Id == skillId)));
+            }
+        }
+
+        // Get total count for pagination metadata
+        var totalCount = await query.CountAsync();
+
+        // Apply pagination
+        var items = await query
+            .OrderByDescending(c => c.CreatedAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var dtos = _mapper.Map<IEnumerable<CandidateReadDto>>(items);
+
+        // Return paginated response with metadata
+        return Ok(new
+        {
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            Items = dtos
+        });
+    }
+
+    /// <summary>
     /// Creates a new candidate with the provided information.
     /// </summary>
     /// <param name="createDto">The candidate creation data.</param>
