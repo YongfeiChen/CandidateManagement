@@ -30,9 +30,4 @@ public class CandidateCreateDto
     /// Gets or sets the list of skill identifiers associated with the candidate.
     /// </summary>
     public List<int> SkillIds { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the date and time when the candidate record was created.
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
 }
