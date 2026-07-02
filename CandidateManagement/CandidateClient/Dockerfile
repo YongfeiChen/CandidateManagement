@@ -3,8 +3,13 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm install
+# Force cache invalidation with build timestamp
+ARG BUILD_DATE
+ENV BUILD_DATE=${BUILD_DATE}
+
+COPY package.json ./
+COPY package-lock.json ./
+RUN npm install --legacy-peer-deps
 
 COPY . .
 RUN npm run build
